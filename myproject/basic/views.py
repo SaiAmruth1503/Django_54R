@@ -5,6 +5,11 @@ from django.db import connection
 import json
 from django.views.decorators.csrf import csrf_exempt
 from basic.models import StudentNew,Users
+from django.contrib.auth.hashers import make_password,check_password
+import jwt
+from django.conf import settings
+from datetime import datetime,timedelta
+from zoneinfo import ZoneInfo
 
 
 # Create your views here.
@@ -109,6 +114,42 @@ def signup(request):
         user=Users.objects.create(
             username=data.get('username'),
             email=data.get('email'),
-            password=data.get('password')
+            password=make_password(data.get('password'))
             )
         return JsonResponse({"data":"success"},status=200)
+
+@csrf_exempt
+def login(request):
+    if request.method=="POST":
+        data=request.POST
+        print(data)
+        username=data.get('username')    
+        password=data.get("password")       
+        try:
+            user=Users.objects.get(username=username)
+            issued_time=datetime.now(ZoneInfo("Asia/Kolkata"))
+            expired_time=issued_time+timedelta(minutes=1)
+
+            if check_password(password,user.password):
+                token ="a json web token"
+                payload={"username":username,"email":user.email,"id":user.id,"exp":expired_time}
+                token=jwt.encode(payload,settings.SECRET_KEY,algorithm="HS256")
+                return JsonResponse({"status":'successfully logged in',"token":token,"issued at":issued_time,"expires at":expired_time,"expired in":int((expired_time-issued_time).total_seconds())},status=200)
+            
+            else:
+                return JsonResponse({"status":'failure','message':'invalid password'},status=400)
+            
+        except Users.DoesNotExist:
+            return JsonResponse({"status":'failure','message':'user not found'},status=400)
+
+
+
+@csrf_exempt
+def check(request):
+    hashed="pbkdf2_sha256$870000$UgLxkYN0H2iHBDiYiDtOMh$vghuJ0MHKsu6ufzN1D+nRYulQyeWqRhajyifD7SS600="
+    ipdata=request.POST
+    print(ipdata)
+    # hashed=make_password(ipdata.get("ip"))
+    x=check_password(ipdata.get("ip"),hashed)
+    print(hashed)
+    return JsonResponse({"status":"success","data":x},status=200)

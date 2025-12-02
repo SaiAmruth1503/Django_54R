@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -52,7 +53,9 @@ MIDDLEWARE = [
     'basic.middleware.AgeMiddleware',
     'basic.middleware.MedicalFitMiddleware',
     'basic.middleware.SscMiddleware',
-    'basic.middleware.UsernameMiddleware'
+    'basic.middleware.UsernameMiddleware',
+    'basic.middleware.Emailmiddleware',
+    'basic.middleware.Passwordmiddleware'
 ]
 
 ROOT_URLCONF = 'myproject.urls'

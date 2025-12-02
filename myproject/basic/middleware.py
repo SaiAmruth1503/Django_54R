@@ -82,3 +82,34 @@ class UsernameMiddleware:
                 return JsonResponse({"error":"sholud not have .. or __ "},status=400)
         
         return self.get_response(request)
+    
+class Emailmiddleware:
+    def __init__(self,get_response):
+        self.get_response=get_response
+    def __call__(self,request):
+        if (request.path == "/signup/"):
+            data=json.loads(request.body)
+            email=data.get("email","")
+            if not email:
+              return JsonResponse({"error":"email is required"},status=400)
+            if not re.match(r"^[a-zA-Z0-9._%+-]+@gmail\.com$", email):
+              return JsonResponse({"error":"email should be in abc123@gmail.com"},status=400)
+        
+        return self.get_response(request)
+
+class Passwordmiddleware:
+    def __init__(self,get_response):
+        self.get_response=get_response
+    def __call__(self, request):
+        if request.path == "/signup/":
+            data = json.loads(request.body)
+            password = data.get("password", "")
+
+            if not password:
+                return JsonResponse({"error": "Password is required"}, status=400)
+
+            pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%?&])[A-Za-z\d@$!%?&]{8,}$"
+            if not re.match(pattern, password):
+                return JsonResponse({"error": "Password is not strong"}, status=400)
+
+        return self.get_response(request)
